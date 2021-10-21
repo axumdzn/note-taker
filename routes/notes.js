@@ -2,7 +2,7 @@ const notes = require('express').Router();
 const fs = require('fs');
 
 notes.get('/', (req,res) => {
-    fs.readFileSync('../db/db.json', 'utf-8', (err,data) => {
+    fs.readFile('./db/db.json', 'utf-8', (err,data) => {
         if(err) {console.log(err);}
         else {
             res.json(JSON.parse(data));
@@ -15,17 +15,23 @@ notes.post('/', (req,res) => {
 
     const{ title, text} = req.body;
 
-    fs.readFileSync('../db/db.json', 'utf-8', (err,data) => {
+    fs.readFile('./db/db.json', 'utf-8', (err,data) => {
         if(err) {console.log(err);}
         else {
-            if(req.body) {
+                
+                let newData = JSON.parse(data);
+                let newID = 1;
+                console.log(newData);
+                if(newData.length !== 0){
+                    newID = newData[newData.length-1].id + 1;
+                }
                 const newNote = {
+                    id: newID,
                     title: title,
                     text: text,
                 }
-                let newData = JSON.parse(data);
                 newData.push(newNote);
-                fs.writeFileSync('../db/db.json', JSON.stringify(newData, null, 4), (err) => {
+                fs.writeFile('./db/db.json', JSON.stringify(newData, null, 4), (err) => {
                     if(err) {console.error(err);}
                     else{
                         res.json(newData);
@@ -35,8 +41,31 @@ notes.post('/', (req,res) => {
             };
             
         }
-    })
+    )
 });
+
+
+notes.delete('/:id', (req, res) => {
+    fs.readFile('./db/db.json', 'utf-8', (err,data) => {
+        if(err) {console.log(err);}
+        else {
+                let nData = JSON.parse(data);
+                let newData= nData.filter(nata => nata.id != req.params.id);
+                console.log(req.params.id);
+                console.log(newData);
+                fs.writeFile('./db/db.json', JSON.stringify(newData, null, 4), (err) => {
+                    if(err) {console.error(err);}
+                    else{
+                        res.json(newData);
+                        console.info('\nNote has been Deleted');
+                    }
+                })
+            };
+            
+        }
+    )
+})
+
 
 module.exports = notes;
 
